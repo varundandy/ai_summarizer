@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, FormEvent } from "react";
 
 import { copy, linkIcon, loader, tick } from "../assets";
 import { useLazyGetSummaryQuery } from "../services/article";
-import { deleteIcon } from "../assets";
 import { MdDelete } from "react-icons/md";
 
 type Article = {
@@ -10,10 +9,11 @@ type Article = {
   summary: string;
 };
 const Demo = () => {
-  const [article, setArticle] = useState<Article>({
+  const articleInitialState = {
     url: "",
     summary: "",
-  });
+  };
+  const [article, setArticle] = useState<Article>(articleInitialState);
 
   const [allArticles, setAllArticles] = useState<Article[]>([]);
   const [copied, setCopied] = useState("");
@@ -29,7 +29,7 @@ const Demo = () => {
       setAllArticles(articlesFromLocalStorage);
     }
   }, []);
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const existingArticle = allArticles?.filter((item) => {
       return item.url === article.url;
@@ -56,20 +56,32 @@ const Demo = () => {
     setTimeout(() => setCopied(""), 7000);
   };
 
-  const handleDelete = (e, articleToBeDeleted: Article) => {
+  const handleDelete = (
+    e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+    articleToBeDeleted: Article
+  ) => {
     e.stopPropagation();
     const updatedListOfArticles: Article[] = allArticles.filter((item) => {
       return item.url !== articleToBeDeleted.url;
     });
     setAllArticles(updatedListOfArticles);
+    if (updatedListOfArticles.length == 0) {
+      setArticle(articleInitialState);
+    }
     localStorage.setItem("articles", JSON.stringify(updatedListOfArticles));
   };
+
+  if (error) {
+    console.log(error);
+  }
 
   return (
     <section className="mt-16 w-full max-w-xl">
       <div className="flex flex-col gap-2 w-full">
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            handleSubmit(e);
+          }}
           className=" relative flex justify-center items-center"
         >
           <img
@@ -130,9 +142,6 @@ const Demo = () => {
           <p className="font-inter font-bold text-black text-center">
             Well, that wasn't supposed to happen...
             <br />
-            <span className="font-satoshi font-normal text-gray-700">
-              {error?.data?.error}
-            </span>
           </p>
         ) : (
           article.summary && (
