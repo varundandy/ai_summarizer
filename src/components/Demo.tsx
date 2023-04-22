@@ -2,20 +2,21 @@ import React, { useState, useEffect } from "react";
 
 import { copy, linkIcon, loader, tick } from "../assets";
 import { useLazyGetSummaryQuery } from "../services/article";
+import { deleteIcon } from "../assets";
+import {MdDelete} from 'react-icons/md';
 
 type Article = {
   url: string;
   summary: string;
 };
 const Demo = () => {
-  
   const [article, setArticle] = useState<Article>({
     url: "",
     summary: "",
   });
 
   const [allArticles, setAllArticles] = useState<Article[]>([]);
-  const [copied, setCopied] = useState('');
+  const [copied, setCopied] = useState("");
   const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
 
   useEffect(() => {
@@ -30,22 +31,40 @@ const Demo = () => {
   }, []);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { data } = await getSummary({ articleUrl: article.url });
-    if (data?.summary) {
-      const newArticle = { ...article, summary: data.summary };
-      setArticle(newArticle);
-      const updatedAllArticles: Article[] = [newArticle, ...allArticles];
-      setAllArticles(updatedAllArticles);
-      localStorage.setItem("articles", JSON.stringify(updatedAllArticles));
-      console.log(newArticle);
+    const existingArticle = allArticles?.filter((item) => {
+      return item.url === article.url;
+    });
+    if (existingArticle.length > 0) {
+      setArticle(existingArticle[0]);
+      console.log("Article Exists already");
+    } else {
+      const { data } = await getSummary({ articleUrl: article.url });
+      if (data?.summary) {
+        const newArticle = { ...article, summary: data.summary };
+        setArticle(newArticle);
+        const updatedAllArticles: Article[] = [newArticle, ...allArticles];
+        setAllArticles(updatedAllArticles);
+        localStorage.setItem("articles", JSON.stringify(updatedAllArticles));
+        console.log(newArticle);
+      }
     }
   };
 
-  const handleCopy = (copyUrl:string) => {
+  const handleCopy = (copyUrl: string) => {
     setCopied(copyUrl);
     navigator.clipboard.writeText(copyUrl);
-    setTimeout(() => setCopied(''), 7000);
+    setTimeout(() => setCopied(""), 7000);
   };
+
+  const handleDelete = (e, articleToBeDeleted: Article) => {
+    e.stopPropagation();
+    const updatedListOfArticles:Article[] = allArticles.filter((item) => {
+      return item.url !== articleToBeDeleted.url;
+    });
+    setAllArticles(updatedListOfArticles);
+    localStorage.setItem("articles", JSON.stringify(updatedListOfArticles));
+  };
+
   return (
     <section className="mt-16 w-full max-w-xl">
       <div className="flex flex-col gap-2 w-full">
@@ -92,6 +111,9 @@ const Demo = () => {
                 <p className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate">
                   {item.url}
                 </p>
+                <div className="delete_btn" onClick={(e) => handleDelete(e, item)}>
+                 <MdDelete />
+                </div>
               </div>
             );
           })}
