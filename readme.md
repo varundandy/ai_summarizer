@@ -1,5 +1,5 @@
-![AI Summarizer]
- 
+AI Summarizer 
+
 Project Details
 - React with Vite
 - Tailwind CSS
