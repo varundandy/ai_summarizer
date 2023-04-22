@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import { copy, linkIcon, loader, tick } from "../assets";
 import { useLazyGetSummaryQuery } from "../services/article";
 import { deleteIcon } from "../assets";
-import {MdDelete} from 'react-icons/md';
+import { MdDelete } from "react-icons/md";
 
 type Article = {
   url: string;
@@ -58,7 +58,7 @@ const Demo = () => {
 
   const handleDelete = (e, articleToBeDeleted: Article) => {
     e.stopPropagation();
-    const updatedListOfArticles:Article[] = allArticles.filter((item) => {
+    const updatedListOfArticles: Article[] = allArticles.filter((item) => {
       return item.url !== articleToBeDeleted.url;
     });
     setAllArticles(updatedListOfArticles);
@@ -111,8 +111,11 @@ const Demo = () => {
                 <p className="flex-1 font-satoshi text-blue-700 font-medium text-sm truncate">
                   {item.url}
                 </p>
-                <div className="delete_btn" onClick={(e) => handleDelete(e, item)}>
-                 <MdDelete />
+                <div
+                  className="delete_btn"
+                  onClick={(e) => handleDelete(e, item)}
+                >
+                  <MdDelete />
                 </div>
               </div>
             );
